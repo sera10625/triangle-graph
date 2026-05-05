@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼각함수 인터랙티브 랩</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-sin: #f43f5e;
+            --accent-cos: #3b82f6;
+            --accent-tan: #10b981;
+            --border: #334155;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1240px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Logo Configuration */
+        .logo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            text-align: right;
+            z-index: 100;
+            pointer-events: none;
+            user-select: none;
+        }
+        .logo-moon {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            color: #ffffff;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .logo-loge {
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            font-size: 32px;
+            color: #94a3b8;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .logo-sub {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 2px;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+
+        /* Top Control Bar */
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+        }
+        .btn.active-sin { background: var(--accent-sin); color: #fff; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3); }
+        .btn.active-cos { background: var(--accent-cos); color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn.active-tan { background: var(--accent-tan); color: #fff; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+
+        .btn-reset {
+            margin-left: 8px;
+            background: #334155;
+            color: var(--text-main);
+        }
+        .btn-reset:hover {
+            background: #475569;
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 32px;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 12px 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .val-theta { color: #e2e8f0; }
+        .val-sin { color: var(--accent-sin); }
+        .val-cos { color: var(--accent-cos); }
+        .val-tan { color: var(--accent-tan); }
+
+        /* Canvas Space */
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            background: var(--panel-bg);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <div class="logo">
+            <span class="logo-moon">Moon</span><span class="logo-loge">loge</span>
+            <div class="logo-sub">y = f(x)</div>
+        </div>
+        
+        <div class="top-bar">
+            <div class="controls">
+                <button id="btn-sin" class="btn active-sin" onclick="setFunc('sin')">sin</button>
+                <button id="btn-cos" class="btn" onclick="setFunc('cos')">cos</button>
+                <button id="btn-tan" class="btn" onclick="setFunc('tan')">tan</button>
+                <button id="btn-reset" class="btn btn-reset" onclick="reset()">초기화</button>
+            </div>
+            
+            <div class="stats-panel">
+                <div class="stat">
+                    <span class="stat-label">Angle (θ)</span>
+                    <span class="stat-val val-theta" id="txt-theta">0.00π</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">sin(θ)</span>
+                    <span class="stat-val val-sin" id="txt-sin">0.00</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">cos(θ)</span>
+                    <span class="stat-val val-cos" id="txt-cos">1.00</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">tan(θ)</span>
+                    <span class="stat-val val-tan" id="txt-tan">0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="mainCanvas" width="1200" height="600"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = 1200;
+        const H = 600;
+
+        let currentFunc = 'sin';
+        let targetAngle = 0;
+        let currentAngle = 0; 
+        let isDragging = false;
+        let dashOffset = 0;
+
+        const cx = 260, cy = 300, R = 180; 
+        const gx = 600, gy = 300;          
+        const scaleX = 80;                 
+        const gW = 2 * Math.PI * scaleX;   
+        const gH = 400;
+        const scaleY = R;                  
+
+        const colors = {
+            bg: '#0f172a',
+            panel: '#1e293b',
+            sin: '#f43f5e',
+            cos: '#3b82f6',
+            tan: '#10b981',
+            textMain: '#f8fafc',
+            textMuted: '#94a3b8',
+            axis: 'rgba(255, 255, 255, 0.3)',
+            grid: 'rgba(255, 255, 255, 0.04)',
+            gridHighlight: 'rgba(255, 255, 255, 0.12)'
+        };
+
+        function setFunc(f) {
+            currentFunc = f;
+            document.getElementById('btn-sin').className = 'btn' + (f==='sin'?' active-sin':'');
+            document.getElementById('btn-cos').className = 'btn' + (f==='cos'?' active-cos':'');
+            document.getElementById('btn-tan').className = 'btn' + (f==='tan'?' active-tan':'');
+        }
+
+        function reset() {
+            targetAngle = 0;
+        }
+
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scale_x = canvas.width / rect.width;
+            const scale_y = canvas.height / rect.height;
+            
+            if (evt.touches && evt.touches.length > 0) {
+                return {
+                    x: (evt.touches[0].clientX - rect.left) * scale_x,
+                    y: (evt.touches[0].clientY - rect.top) * scale_y
+                };
+            }
+            return {
+                x: (evt.clientX - rect.left) * scale_x,
+                y: (evt.clientY - rect.top) * scale_y
+            };
+        }
+
+        function handleInputStart(e) {
+            const pos = getMousePos(e);
+            const dist = Math.hypot(pos.x - cx, pos.y - cy);
+            if (dist < R + 80) { 
+                isDragging = true;
+                updateAngleFromPos(pos);
+            }
+        }
+
+        function handleInputMove(e) {
+            if (!isDragging) return;
+            const pos = getMousePos(e);
+            updateAngleFromPos(pos);
+        }
+
+        function handleInputEnd() {
+            isDragging = false;
+        }
+
+        canvas.addEventListener('mousedown', handleInputStart);
+        window.addEventListener('mousemove', handleInputMove);
+        window.addEventListener('mouseup', handleInputEnd);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInputStart(e); }, {passive: false});
+        window.addEventListener('touchmove', (e) => { if(isDragging) e.preventDefault(); handleInputMove(e); }, {passive: false});
+        window.addEventListener('touchend', handleInputEnd);
+
+        function updateAngleFromPos(pos) {
+            let a = Math.atan2(cy - pos.y, pos.x - cx);
+            if (a < 0) a += 2 * Math.PI;
+            targetAngle = a;
+            currentAngle = targetAngle;
+            updateStats();
+        }
+
+        function updateStats() {
+            const a = currentAngle;
+            const s = Math.sin(a);
+            const c = Math.cos(a);
+            const t = Math.tan(a);
+            
+            document.getElementById('txt-theta').textContent = (a / Math.PI).toFixed(2) + 'π';
+            document.getElementById('txt-sin').textContent = s.toFixed(2);
+            document.getElementById('txt-cos').textContent = c.toFixed(2);
+            
+            if (Math.abs(t) > 100) {
+                document.getElementById('txt-tan').textContent = '∞';
+            } else {
+                document.getElementById('txt-tan').textContent = t.toFixed(2);
+            }
+        }
+
+        function drawGrid() {
+            ctx.lineWidth = 1;
+            
+            ctx.strokeStyle = colors.grid;
+            ctx.beginPath();
+            for(let i=0; i<=2*Math.PI + 0.1; i+=Math.PI/8) {
+                const x = gx + i * scaleX;
+                ctx.moveTo(x, gy - gH/2); ctx.lineTo(x, gy + gH/2);
+            }
+            for(let j=-2; j<=2; j+=0.25) {
+                const y = gy - j * scaleY;
+                ctx.moveTo(gx, y); ctx.lineTo(gx + gW + 60, y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = colors.axis;
+            ctx.beginPath();
+            ctx.moveTo(cx - R - 50, cy); ctx.lineTo(cx + R + 50, cy);
+            ctx.moveTo(cx, cy - R - 50); ctx.lineTo(cx, cy + R + 50);
+            ctx.moveTo(gx - 30, gy); ctx.lineTo(gx + gW + 60, gy);
+            ctx.moveTo(gx, gy - gH/2); ctx.lineTo(gx, gy + gH/2);
+            ctx.stroke();
+            
+            ctx.fillStyle = colors.textMuted;
+            ctx.font = '13px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            const xMarks = [
+                {v: Math.PI/2, l: 'π/2'},
+                {v: Math.PI, l: 'π'},
+                {v: 3*Math.PI/2, l: '3π/2'},
+                {v: 2*Math.PI, l: '2π'}
+            ];
+            
+            ctx.strokeStyle = colors.gridHighlight;
+            xMarks.forEach(m => {
+                const x = gx + m.v * scaleX;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, gy - 6); ctx.lineTo(x, gy + 6);
+                ctx.stroke();
+                
+                ctx.fillText(m.l, x, gy + 12);
+                
+                ctx.beginPath();
+                ctx.moveTo(x, gy - gH/2); ctx.lineTo(x, gy + gH/2);
+                ctx.stroke();
+            });
+            
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('1', gx - 12, gy - scaleY);
+            ctx.fillText('-1', gx - 12, gy + scaleY);
+            
+            ctx.beginPath();
+            ctx.moveTo(gx - 6, gy - scaleY); ctx.lineTo(gx + 6, gy - scaleY);
+            ctx.moveTo(gx - 6, gy + scaleY); ctx.lineTo(gx + 6, gy + scaleY);
+            ctx.stroke();
+        }
+
+        function drawUnitCircle() {
+            ctx.strokeStyle = colors.textMuted;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, 2*Math.PI);
+            ctx.stroke();
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, 35, 0, -currentAngle, true);
+            ctx.fill();
+            
+            const px = cx + R * Math.cos(currentAngle);
+            const py = cy - R * Math.sin(currentAngle);
+            
+            ctx.strokeStyle = colors.textMain;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy); ctx.lineTo(px, py);
+            ctx.stroke();
+            
+            const c = colors[currentFunc];
+            ctx.strokeStyle = c;
+            
+            if (currentFunc === 'sin') {
+                // Drop vertical line representing Sin (왼쪽 빨간 수직선 유지)
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(px, py); ctx.lineTo(px, cy);
+                ctx.stroke();
+            } else if (currentFunc === 'cos') {
+                // Emphasize the X axis segment (x좌표 강조)
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy); ctx.lineTo(px, cy);
+                ctx.stroke();
+                
+                // Horizontal line from P to Y-axis (점 P에서 수평선(→) 을 그려 x값을 강조)
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(px, py); ctx.lineTo(cx, py);
+                ctx.stroke();
+            } else if (currentFunc === 'tan') {
+                ctx.strokeStyle = colors.axis;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx + R, cy - R - 60); ctx.lineTo(cx + R, cy + R + 60);
+                ctx.stroke();
+                
+                const tx = cx + R;
+                const ty = cy - R * Math.tan(currentAngle);
+                
+                ctx.strokeStyle = colors.textMuted;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(px, py); ctx.lineTo(tx, ty);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.strokeStyle = c;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(tx, cy); ctx.lineTo(tx, ty);
+                ctx.stroke();
+            }
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = colors.textMain;
+            ctx.font = '14px "Inter", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('P', px + 10, py - 10);
+            
+            if (currentAngle > 0.1) {
+                const textR = 50;
+                const txText = cx + textR * Math.cos(currentAngle/2);
+                const tyText = cy - textR * Math.sin(currentAngle/2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = colors.textMain;
+                ctx.fillText('θ', txText, tyText);
+            }
+        }
+
+        function drawGraph() {
+            const c = colors[currentFunc];
+            
+            if (currentFunc === 'tan') {
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                [Math.PI/2, 3*Math.PI/2].forEach(t => {
+                    const x = gx + t * scaleX;
+                    ctx.beginPath();
+                    ctx.moveTo(x, gy - gH/2); ctx.lineTo(x, gy + gH/2);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.font = '12px "Inter", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('점근선', x + 25, gy - gH/2 + 15);
+                });
+                ctx.setLineDash([]);
+            }
+
+            ctx.strokeStyle = c;
+            ctx.lineWidth = 3;
+            
+            ctx.globalAlpha = 0.2;
+            ctx.beginPath();
+            let first = true;
+            for (let t = 0; t <= 2*Math.PI; t += 0.02) {
+                let yVal = currentFunc === 'sin' ? Math.sin(t) : currentFunc === 'cos' ? Math.cos(t) : Math.tan(t);
+                const x = gx + t * scaleX;
+                const y = gy - yVal * scaleY;
+                
+                if (currentFunc === 'tan' && Math.abs(yVal) > 6) {
+                    ctx.stroke();
+                    ctx.beginPath();
+                    first = true;
+                    continue;
+                }
+                
+                if (first) { ctx.moveTo(x, y); first = false; }
+                else { ctx.lineTo(x, y); }
+            }
+            ctx.stroke();
+            
+            ctx.globalAlpha = 1.0;
+            ctx.beginPath();
+            first = true;
+            for (let t = 0; t <= currentAngle; t += 0.02) {
+                let yVal = currentFunc === 'sin' ? Math.sin(t) : currentFunc === 'cos' ? Math.cos(t) : Math.tan(t);
+                const x = gx + t * scaleX;
+                const y = gy - yVal * scaleY;
+                
+                if (currentFunc === 'tan' && Math.abs(yVal) > 6) {
+                    ctx.stroke();
+                    ctx.beginPath();
+                    first = true;
+                    continue;
+                }
+                
+                if (first) { ctx.moveTo(x, y); first = false; }
+                else { ctx.lineTo(x, y); }
+            }
+            
+            let yValEnd = currentFunc === 'sin' ? Math.sin(currentAngle) : currentFunc === 'cos' ? Math.cos(currentAngle) : Math.tan(currentAngle);
+            if (!(currentFunc === 'tan' && Math.abs(yValEnd) > 6)) {
+                const xEnd = gx + currentAngle * scaleX;
+                const yEnd = gy - yValEnd * scaleY;
+                if (!first) ctx.lineTo(xEnd, yEnd);
+            }
+            ctx.stroke();
+            
+            if (!(currentFunc === 'tan' && Math.abs(yValEnd) > 6)) {
+                const ptx = gx + currentAngle * scaleX;
+                const pty = gy - yValEnd * scaleY;
+                
+                // Add vertical line from X-axis to the graph point (위로 올라가 그래프 점 생성)
+                ctx.strokeStyle = c;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(ptx, gy); ctx.lineTo(ptx, pty);
+                ctx.stroke();
+
+                ctx.fillStyle = c;
+                ctx.shadowColor = c;
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(ptx, pty, 7, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = colors.textMain;
+                ctx.font = '14px "JetBrains Mono", monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`${currentFunc}(θ)=${yValEnd.toFixed(2)}`, ptx + 12, pty - 12);
+            }
+        }
+
+        function drawConnection() {
+            const c = colors[currentFunc];
+            ctx.globalAlpha = 0.8;
+            
+            const px = cx + R * Math.cos(currentAngle);
+            const py = cy - R * Math.sin(currentAngle);
+            
+            let yVal = currentFunc === 'sin' ? Math.sin(currentAngle) : currentFunc === 'cos' ? Math.cos(currentAngle) : Math.tan(currentAngle);
+            const ptx = gx + currentAngle * scaleX;
+            const pty = gy - yVal * scaleY;
+            
+            // 1. θ Projection to X-axis
+            // Dot on x-axis
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(ptx, gy, 4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = colors.textMain;
+            ctx.font = '13px "Inter", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('θ', ptx, gy - 8); // x축에 현재 θ 위치 표시
+
+            // Curved projection line from angle to θ position (θ -> x좌표로 이동/투영되는 느낌)
+            if (currentAngle > 0.05) {
+                ctx.strokeStyle = colors.textMuted;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.lineDashOffset = dashOffset;
+                
+                const arcMidX = cx + 45 * Math.cos(currentAngle/2);
+                const arcMidY = cy - 45 * Math.sin(currentAngle/2);
+                
+                ctx.beginPath();
+                ctx.moveTo(arcMidX, arcMidY);
+                ctx.quadraticCurveTo(cx + R + 50, gy, ptx, gy);
+                ctx.stroke();
+            }
+            
+            // 2. L-shape and specific value connections
+            ctx.lineWidth = 2;
+            ctx.lineDashOffset = dashOffset;
+
+            if (currentFunc === 'sin') {
+                // Top horizontal connection (Strong y-value link: 왼쪽 높이 = 오른쪽 그래프 높이)
+                ctx.strokeStyle = c;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(px, py); ctx.lineTo(ptx, pty);
+                ctx.stroke();
+
+                // Bottom horizontal guide (L-shape base: 원 -> 수평이동 -> x축 θ 위치)
+                ctx.strokeStyle = colors.textMuted;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(px, cy); ctx.lineTo(ptx, gy);
+                ctx.stroke();
+            } else if (currentFunc === 'cos') {
+                // Drop line from P to x-axis
+                ctx.strokeStyle = colors.textMuted;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(px, py); ctx.lineTo(px, cy);
+                ctx.stroke();
+
+                // L-shape bottom connection: from x-coord to θ position (단위원의 x좌표 -> L자 경로 -> 그래프)
+                ctx.beginPath();
+                ctx.moveTo(px, cy); ctx.lineTo(ptx, gy);
+                ctx.stroke();
+            } else if (currentFunc === 'tan') {
+                if (Math.abs(yVal) <= 6) {
+                    const tx = cx + R;
+                    const ty = cy - yVal * scaleY;
+                    
+                    ctx.strokeStyle = c;
+                    ctx.setLineDash([6, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(tx, ty); ctx.lineTo(ptx, pty);
+                    ctx.stroke();
+                    
+                    ctx.strokeStyle = colors.textMuted;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(tx, cy); ctx.lineTo(ptx, gy);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.globalAlpha = 1.0;
+            ctx.setLineDash([]);
+        }
+
+        function renderLoop() {
+            dashOffset -= 0.8; 
+            
+            if (!isDragging && Math.abs(currentAngle - targetAngle) > 0.001) {
+                currentAngle += (targetAngle - currentAngle) * 0.1;
+                updateStats();
+            }
+            
+            ctx.clearRect(0, 0, W, H);
+            
+            drawGrid();
+            drawUnitCircle();
+            drawGraph();
+            drawConnection();
+            
+            requestAnimationFrame(renderLoop);
+        }
+
+        updateStats();
+        requestAnimationFrame(renderLoop);
+
+    </script>
+</body>
+</html>
