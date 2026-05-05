@@ -73,17 +73,27 @@
             letter-spacing: 1px;
         }
 
-        /* Top Control Bar */
-        .top-bar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 24px;
-            gap: 20px;
-             margin-top: 50px; 
-        }
+     /* Top Control Bar */
+.top-bar {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;    
+    margin-bottom: 24px;
+    gap: 20px;              
+    margin-top: 20px;    
+}
 
+.stats-panel {
+    position: relative;   
+    transform: none;       
+    left: auto;
+    display: flex;
+    flex-wrap: wrap;       
+    justify-content: center;
+    gap: 15px;
+    top: auto; 
+}
         .controls {
             display: flex;
             gap: 12px;
